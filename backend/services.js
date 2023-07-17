@@ -27,13 +27,15 @@ const addProblem = (data) =>{
       const name =  data.name;
       const description = data.description;
       const constraints = data.constraints;
-      const testcases = data.testcases;
+      const input = data.input;
+      const output = data.output;
       const date = Date.now();
       const problem = new problems({
           name,
           description,
           constraints,
-          testcases,
+          input,
+          output,
           date,
       });
       problem.save()
@@ -86,7 +88,8 @@ const addSubmission = (data) => {
     const code = data.code;
     const verdict = data.verdict;
     const score = data.score;
-    const testcases = data.testcases;
+    const input = data.input;
+    const output = data.output;
     const date = Date.now();
   
     const submission = new submissions({
@@ -95,7 +98,8 @@ const addSubmission = (data) => {
       code,
       verdict,
       score,
-      testcases,
+      input,
+      output,
       date,
     });
     submission.save().then((data) =>{
