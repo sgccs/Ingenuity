@@ -6,7 +6,8 @@ const problemSchema = new Schema({
     name:{ type: String, required: true},
     description: {type: String, required: true},
     constraints: {type: String, required: true},
-    testcases: {type: [String], required: true},
+    input: {type: [String], required: true},
+    output: {type: [String], required: true},
     date: { type: Date, required: true },
 }, {
   timestamps: true,
