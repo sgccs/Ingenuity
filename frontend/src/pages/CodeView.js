@@ -3,16 +3,25 @@ import Editor from "@monaco-editor/react";
 import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
 import InputLabel from "@mui/material/InputLabel";
+import Alert from "@mui/material/Alert";
+import AlertTitle from "@mui/material/AlertTitle";
 import axios from "axios";
 import { useParams } from "react-router";
 import { baseUrl } from "../constants";
+import { IconButton } from "@mui/material";
+import FullscreenIcon from "@mui/icons-material/Fullscreen";
+import FileCopyIcon from "@mui/icons-material/FileCopy";
+import Button from "@mui/material/Button";
 
 const CodeView = () => {
   const { id } = useParams();
   const [selectedLanguage, setSelectedLanguage] = useState("cpp");
   const [selectedTheme, setSelectedTheme] = useState("vs-dark");
-  const [codeValue, setCodeValue] = useState('console.log("hello world!")');
+  const [codeValue, setCodeValue] = useState("");
   const [problem, setProblem] = useState("");
+  const [submit, setSubmit] = useState(false);
+  const [verdict, setVerdict] = useState(false);
+  const [output, setOutput] = useState('');
 
   const fetchProblem = () => {
     axios
@@ -24,10 +33,31 @@ const CodeView = () => {
       })
       .catch((err) => console.log("Error in fetching details", err));
   };
+
   useEffect(() => {
     // fetch problem
     fetchProblem();
-  });
+  }, [id]);
+
+  useEffect(() => {
+    // update default code based on selected language
+    const getDefaultCode = () => {
+      switch (selectedLanguage) {
+        case "cpp":
+          return '#include<bits/stdc++.h> \n\n using namespace std; \n\n  int main(){ \n\n  cout<<"hello World!"<<endl; \n\n  return 0; \n\n }';
+        case "js":
+          return 'console.log("Hello, World!");';
+        case "py":
+          return 'print("Hello, World!")';
+        case "java":
+          return 'class HelloWorld { \n\n public static void main(String[] args) { \n\n System.out.println("Hello, World!"); \n\n} \n\n}';
+        default:
+          return "";
+      }
+    };
+
+    setCodeValue(getDefaultCode());
+  }, [selectedLanguage]);
 
   const handleLanguageChange = (event) => {
     setSelectedLanguage(event.target.value);
@@ -41,6 +71,56 @@ const CodeView = () => {
     setCodeValue(value);
   };
 
+  const handleCopyCode = () => {
+    navigator.clipboard.writeText(codeValue);
+  };
+
+  const handleCopyInput = () => {
+    navigator.clipboard.writeText(problem.input[0]);
+  };
+
+  const handleCopyOutput = () => {
+    navigator.clipboard.writeText(problem.output[0]);
+  };
+
+  const handleSubmit = () => {
+    setSubmit(true);
+    const body = {
+      problemID: id,
+      userID: "sgccs",
+      code: codeValue,
+      language: selectedLanguage,
+      input: problem.input,
+      output: problem.output,
+    };
+    axios
+      .post(baseUrl + "/submission", body)
+      .then((res) => {
+        console.log(res.data);
+        if (res.data.verdict === "sucess") {
+          setSubmit(true);
+          setVerdict(true);
+        } else {
+          setSubmit(false);
+          setVerdict(true);
+          setOutput(res.data);
+          console.log(res.data);
+        }
+      })
+      .catch((err) => console.log("Error in fetching details", err));
+  };
+
+  const handleFullscreen = () => {
+    if (document.documentElement.requestFullscreen) {
+      document.documentElement.requestFullscreen();
+    } else if (document.documentElement.mozRequestFullScreen) {
+      document.documentElement.mozRequestFullScreen();
+    } else if (document.documentElement.webkitRequestFullscreen) {
+      document.documentElement.webkitRequestFullscreen();
+    } else if (document.documentElement.msRequestFullscreen) {
+      document.documentElement.msRequestFullscreen();
+    }
+  };
   return (
     <div style={{ display: "flex", height: "100%" }}>
       <div
@@ -60,17 +140,41 @@ const CodeView = () => {
           <p style={{ fontStyle: "oblique" }}>{problem.constraints}</p>
         </div>
         <div class="input" style={{ textAlign: "left", margin: "10px" }}>
-          <h3>Input:</h3>
+          <h3>
+            Input:
+            <IconButton
+              onClick={handleCopyInput}
+              style={{ marginLeft: "10px" }}
+            >
+              <FileCopyIcon />
+            </IconButton>
+          </h3>
           <hr />
           {problem && problem.input && problem.input.length > 0 && (
-            <p style={{ fontStyle: "oblique" }}>{problem.input[0]}</p>
+            <>
+              <pre style={{ fontStyle: "oblique", padding: "10px" }}>
+                {problem.input[0]}
+              </pre>
+            </>
           )}
         </div>
         <div class="output" style={{ textAlign: "left", margin: "10px" }}>
-          <h3>Output:</h3>
+          <h3>
+            Output:
+            <IconButton
+              onClick={handleCopyOutput}
+              style={{ marginLeft: "10px" }}
+            >
+              <FileCopyIcon />
+            </IconButton>
+          </h3>
           <hr />
           {problem && problem.output && problem.output.length > 0 && (
-            <p style={{ fontStyle: "oblique" }}>{problem.output[0]}</p>
+            <>
+              <pre style={{ fontStyle: "oblique", padding: "10px" }}>
+                {problem.output[0]}
+              </pre>
+            </>
           )}
         </div>
       </div>
@@ -103,6 +207,16 @@ const CodeView = () => {
               <MenuItem value="hc-black">High Contrast</MenuItem>
             </Select>
           </div>
+          <div>
+            <Button
+              variant="contained"
+              color="success"
+              style={{ margin: "25px" }}
+              onClick={handleSubmit}
+            >
+              Submit
+            </Button>
+          </div>
           <div style={{ flex: "50%" }}>
             <InputLabel id="language-select-label">Language</InputLabel>
             <Select
@@ -117,20 +231,67 @@ const CodeView = () => {
               }}
             >
               <MenuItem value="cpp">C++</MenuItem>
-              <MenuItem value="javascript">JavaScript</MenuItem>
-              <MenuItem value="python">Python</MenuItem>
+              <MenuItem value="js">JavaScript</MenuItem>
+              <MenuItem value="py">Python</MenuItem>
               <MenuItem value="java">Java</MenuItem>
             </Select>
           </div>
         </div>
-        <div style={{ height: "calc(100vh - 48px)" }}>
+        <div style={{ height: "calc(90vh - 48px)" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              marginBottom: "10px",
+            }}
+          >
+            <IconButton
+              onClick={handleCopyCode}
+              style={{ marginRight: "10px" }}
+            >
+              <FileCopyIcon />
+            </IconButton>
+            <IconButton onClick={handleFullscreen}>
+              <FullscreenIcon />
+            </IconButton>
+          </div>
           <Editor
             height="100%"
             language={selectedLanguage}
             theme={selectedTheme}
             value={codeValue}
             onChange={handleCodeChange}
-          />
+            />
+            {submit && !verdict && (
+              <>
+                <Alert severity="info">
+                  <AlertTitle>Processing</AlertTitle>
+                  Running testcases — <strong>Submission Queued!</strong>
+                </Alert>
+              </>
+            )}
+            {submit && verdict && (
+              <>
+                <Alert severity="success">
+                  <AlertTitle>Success</AlertTitle>
+                  testcases passed — <strong>Submited succesfully!</strong>
+                </Alert>
+              </>
+            )}
+            {!submit && verdict && (
+              <>
+                <Alert severity="warning">
+                  <AlertTitle>Failed</AlertTitle>
+                  testcases failed — <strong>Wrong submission</strong>
+                </Alert>
+                <h3>Expected Output:</h3>
+                <br></br>
+                <pre>{problem.output[0]}</pre>
+                <h3>Recived Output:</h3>
+                <br></br>
+                <pre>{output.data}</pre>
+              </>
+            )}
         </div>
       </div>
     </div>

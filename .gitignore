@@ -25,3 +25,6 @@ yarn-error.log*
 #backend
 /backend/node_modules
 /backend/.env
+/backend/usersubmissions
+
+/compiler/node_modules

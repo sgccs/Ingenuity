@@ -1,7 +1,6 @@
 const express = require('express');
 const cors = require('cors');
 const services = require("./services");
-const problem = require('./models/problem.model');
 
 
 const app = express();
@@ -50,7 +49,11 @@ app.get('/problems/:id', (req, res) => {
 app.get('/submissions/:id', (req, res) => {
     listSubmissions(req, res);
 
-});
+}); // this list's all the submissions for a particular problem
+
+app.get('/submission/:id', (req,res) => {
+    getSubmission(req,res);
+}); // this will return a particular submission
 
 app.post('/submission' , (req,res) =>{
     addSubmission(req,res);
@@ -104,6 +107,16 @@ const listSubmissions = (req,res) => {
 const addSubmission = (req,res) => {
     const data = req.body;
     services.addSubmission(data).then((data) =>{
+        res.send(data).status(200);
+    })
+    .catch(err => {
+        res.send(err).status(500);
+    })
+};
+
+const getSubmission = (req,res) => {
+    const id = req.params['id'];
+    services.getSubmission(id).then((data) => {
         res.send(data).status(200);
     })
     .catch(err => {
