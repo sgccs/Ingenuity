@@ -7,7 +7,7 @@ const submissionSchema = new Schema({
     userID:{ type: Schema.Types.String, ref: 'user' },
     code:{ type: String, required: true},
     verdict: {type: String, required: true},
-    score: {type: Number, required: true},
+    language: {type: String, required: true},
     input: {type: [String], required: true},
     output: {type: [String], required: true},
     date: { type: Date, required: true },

@@ -1,8 +1,14 @@
+const fs = require('fs');
+const path = require('path');
+const fetch = require('node-fetch');
+const axios = require('axios');
 const { connection } = require("./db");
 const router = require("express").Router();
 let problems = require("./models/problem.model");
 let users = require("./models/user.model");
 let submissions = require("./models/submission.model");
+const problem = require('./models/problem.model');
+
 
 const listProblems = () => {
   return new Promise((resolve,reject) => {
@@ -86,30 +92,59 @@ const addSubmission = (data) => {
     const problemID = data.problemID;
     const userID = data.userID;
     const code = data.code;
-    const verdict = data.verdict;
-    const score = data.score;
+    const language = data.language;
     const input = data.input;
     const output = data.output;
     const date = Date.now();
-  
-    const submission = new submissions({
-      problemID,
-      userID,
-      code,
-      verdict,
-      score,
-      input,
-      output,
-      date,
-    });
-    submission.save().then((data) =>{
-      console.log(data);
-      resolve('Submission added sucessfully!')
-    })
-    .catch(err => reject(err));
+    const filename = problemID+'_'+userID+'_'+date+'.'+language;
+    const inputFile = problemID+'_'+'input'+'.'+'txt';
+    const outputFile = problemID+'_'+'output'+'.'+'txt';
+    const inputString = data.input.join('\n');
+    const outputString = data.output.join('\n');
+    fs.writeFileSync(path.join(__dirname,'usersubmissions/'+filename), code, 'utf8');
+    if(!fs.existsSync(path.join(__dirname,'usersubmissions/'+inputFile))) {fs.writeFileSync(path.join(__dirname,'usersubmissions/'+inputFile), inputString, 'utf-8');}
+    const body = {filename, input, output};
+    axios.post('http://localhost:3001/compile',body).then((data) => {
+      console.log(data, "data");
+      const useroutput = data.data;
+      console.log(useroutput);
+      const verdict = (data.data == outputString)?"sucesss":"failure";
+      const submission = new submissions({
+        problemID,
+        userID,
+        code,
+        verdict,
+        language,
+        input,
+        output,
+        date,
+      });
+      data.useroutput = useroutput;
+      submission.save().then((data) =>{
+        resolve(data);
+        //console.log(data);
+      })
+      .catch(err => reject(err));
       console.log("services.addSubmission : added submission succesfully!");
+    })
+      
+    });
+    
+
+};
+
+const getSubmission = (id) => {
+  return new Promise((resolve, reject) => {
+
+    submissions.findById(id).then((problem) => {
+      console.log(problem);
+      resolve(problem);
+    }) 
+    .catch(err => reject(err));
+    console.log("services.getsubmission : feteched submission successfully!!")
   })
-}
+};
+
 
 const addUser = (data) => {
   // details: {type: Object, required: true},
@@ -131,6 +166,6 @@ const addUser = (data) => {
     .catch(err => reject(err));
     console.log("services.addUser : added user succesfully!");
   })
-}
+};
 
-module.exports = { listProblems, getProblem, listSubmissions, addProblem, addSubmission, addUser};
+module.exports = { listProblems, getProblem, listSubmissions, addProblem, addSubmission, addUser, getSubmission};

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Button from '@mui/material/Button';
 import ListItemText from "@mui/material/ListItemText";
 import { ListItemButton } from "@mui/material";
+import { borderLeft } from "@mui/system";
 
 const Problem = (props) => {
   const navigate = useNavigate();
@@ -12,9 +13,13 @@ const Problem = (props) => {
     console.log('clicked');
   };
 
+  const listsubmissions = () => {
+    navigate(`/submissions/${props.problem._id}`);
+    console.log('clicked submissions');
+  };
   return (
     <div>
-      <ListItemButton alignItems="flex-start" onClick={submissionPage}>
+      <ListItemButton alignItems="flex-start" >
         <ListItemText
           primary={props.problem.name}
           secondary={
@@ -23,7 +28,8 @@ const Problem = (props) => {
             </React.Fragment>
           }
         />
-        <Button variant="contained">Code</Button>
+        <Button variant="contained" onClick={submissionPage}>Code</Button>
+        <Button variant="contained" onClick={listsubmissions} style={{paddingLeft: '10px',marginLeft: '10px'}}>Submissions</Button>
       </ListItemButton>
     </div>
   );

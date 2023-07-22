@@ -1,22 +1,21 @@
 {
-  "name": "backend",
+  "name": "compiler",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "axios": "^1.4.0",
     "cors": "^2.8.5",
-    "dotenv": "^16.3.1",
+    "docker-modem": "^3.0.8",
+    "dockerode": "^3.3.5",
     "express": "^4.18.2",
-    "fs": "^0.0.1-security",
-    "mongoose": "^7.3.4",
-    "node-fetch": "^2.6.12",
+    "final-stream": "^2.0.4",
     "nodemon": "^3.0.1",
-    "path": "^0.12.7"
+    "stream": "^0.0.2"
   }
 }

@@ -26,9 +26,10 @@ const Problems = () => {
         <div>
             <h1>Problems</h1>
             <List style={{margin: "100px"}}>
-            {problems?.map((problem) => (
+            {problems && problems.length>0?problems?.map((problem) => (
                 <Problem problem={problem} />
-            ))}
+            )):
+            <p>probl not load</p>}
             </List>
         </div>
     );
