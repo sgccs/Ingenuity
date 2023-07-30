@@ -16,18 +16,30 @@ function convertlanguage(language){
       return 'javascript';
     default:
       return;
+  }
 }
-}
+
 const dockerCreation = (data) => {
   return new Promise((resolve, reject) => {
-    console.log(data.filename);
     const language = data.filename.split('.')[1];
     let lang = convertlanguage(language);
-
-    // Join the array of strings into a single string with newlines
     const problemid = data.filename.split('_')[0];
-
     const stdout = new stream.PassThrough();
+
+    // Loop through each test case and set it as a separate environment variable
+    const inputLength = data.input.length;
+    const envVariables = [
+      `LANG=${lang}`,
+      `FILENAME=${data.filename.split('.')[0]}`,
+      `CODE=${data.code}`,
+      `EXPECTED_OUTPUT=${data.output}`,
+      `TIMELIMIT=5`,
+      `INPUT_LENGTH=${inputLength}`
+    ];
+
+    for (let i = 0; i < inputLength; i++) {
+      envVariables.push(`INPUT_${i}=${data.input[i]}`);
+    }
 
     docker.run(
       'compilers', // Replace with the appropriate Docker image name
@@ -35,20 +47,15 @@ const dockerCreation = (data) => {
       stdout, // Attach to stdout and stderr
       {
         Tty: true,
-        Env: [
-          `LANG=${lang}`,
-          `FILENAME=${data.filename.split('.')[0]}`,
-          `PROBLEMID=${problemid}`
-        ],
+        Env: envVariables,
         HostConfig: {
-          Binds: [`${__dirname}/../backend/usersubmissions:/usersubmissions`], // Replace with the actual path to host directory
+          Binds: [`${__dirname}/../backend/usersubmissions:/usersubmissions`], // Replace with the actual path to the host directory
         },
         OpenStdin: true,
         StdinOnce: true,
-      })
-      .then(([data, container]) => {
+      }
+    ).then(([data, container]) => {
         const containerID = container.id;
-        console.log(container);
         console.log('Container ID:', containerID);
 
         finalStream(stdout)
@@ -72,10 +79,10 @@ const dockerCreation = (data) => {
               .catch(err => console.error('Error while removing container:', err));
           });
       })
-      .catch(err => {
-        reject(err);
-      });
-  });
+    }).catch(err => {
+      reject(err);
+    });
+  ;
 };
 
 module.exports = { dockerCreation };

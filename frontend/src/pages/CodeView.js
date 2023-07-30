@@ -12,6 +12,9 @@ import { IconButton } from "@mui/material";
 import FullscreenIcon from "@mui/icons-material/Fullscreen";
 import FileCopyIcon from "@mui/icons-material/FileCopy";
 import Button from "@mui/material/Button";
+import { purple } from "@mui/material/colors";
+import { styled } from "@mui/material/styles";
+import ProblemView from "../components/ProblemView";
 
 const CodeView = () => {
   const { id } = useParams();
@@ -21,7 +24,17 @@ const CodeView = () => {
   const [problem, setProblem] = useState("");
   const [submit, setSubmit] = useState(false);
   const [verdict, setVerdict] = useState(false);
-  const [output, setOutput] = useState('');
+  const [output, setOutput] = useState("");
+  const [customInput, setCustomInput] = useState("");
+  const [run, setRun] = useState(false);
+
+  const ColorButton = styled(Button)(({ theme }) => ({
+    color: theme.palette.getContrastText(purple[500]),
+    backgroundColor: purple[500],
+    "&:hover": {
+      backgroundColor: purple[700],
+    },
+  }));
 
   const fetchProblem = () => {
     axios
@@ -50,7 +63,7 @@ const CodeView = () => {
         case "py":
           return 'print("Hello, World!")';
         case "java":
-          return 'class HelloWorld { \n\n public static void main(String[] args) { \n\n System.out.println("Hello, World!"); \n\n} \n\n}';
+          return 'class main { \n\n public static void main(String[] args) { \n\n System.out.println("Hello, World!"); \n\n} \n\n}';
         default:
           return "";
       }
@@ -75,11 +88,11 @@ const CodeView = () => {
     navigator.clipboard.writeText(codeValue);
   };
 
-  const handleCopyInput = () => {
+  const handleCopyCustomInput = () => {
     navigator.clipboard.writeText(problem.input[0]);
   };
 
-  const handleCopyOutput = () => {
+  const handleCopyUserOutput = () => {
     navigator.clipboard.writeText(problem.output[0]);
   };
 
@@ -96,18 +109,21 @@ const CodeView = () => {
     axios
       .post(baseUrl + "/submission", body)
       .then((res) => {
-        console.log(res.data);
-        if (res.data.verdict === "sucess") {
+        console.log(res);
+        if (res.data.verdict === "AC") {
           setSubmit(true);
           setVerdict(true);
         } else {
           setSubmit(false);
           setVerdict(true);
-          setOutput(res.data);
-          console.log(res.data);
+          setOutput(res.data.userOutput);
+          console.log(res.data.userOutput);
         }
       })
       .catch((err) => console.log("Error in fetching details", err));
+  };
+  const handleCustomInput = () => {
+    setRun(true);
   };
 
   const handleFullscreen = () => {
@@ -123,61 +139,8 @@ const CodeView = () => {
   };
   return (
     <div style={{ display: "flex", height: "100%" }}>
-      <div
-        style={{
-          flex: "50%",
-          borderRight: "1px solid black",
-          overflow: "auto",
-        }}
-      >
-        <h1>{problem.name}</h1>
-        <div class="problem-description">
-          <p style={{ fontStyle: "italic" }}>{problem.description}</p>
-        </div>
-        <div class="constraints" style={{ textAlign: "left", margin: "10px" }}>
-          <h3>constraints:</h3>
-          <hr></hr>
-          <p style={{ fontStyle: "oblique" }}>{problem.constraints}</p>
-        </div>
-        <div class="input" style={{ textAlign: "left", margin: "10px" }}>
-          <h3>
-            Input:
-            <IconButton
-              onClick={handleCopyInput}
-              style={{ marginLeft: "10px" }}
-            >
-              <FileCopyIcon />
-            </IconButton>
-          </h3>
-          <hr />
-          {problem && problem.input && problem.input.length > 0 && (
-            <>
-              <pre style={{ fontStyle: "oblique", padding: "10px" }}>
-                {problem.input[0]}
-              </pre>
-            </>
-          )}
-        </div>
-        <div class="output" style={{ textAlign: "left", margin: "10px" }}>
-          <h3>
-            Output:
-            <IconButton
-              onClick={handleCopyOutput}
-              style={{ marginLeft: "10px" }}
-            >
-              <FileCopyIcon />
-            </IconButton>
-          </h3>
-          <hr />
-          {problem && problem.output && problem.output.length > 0 && (
-            <>
-              <pre style={{ fontStyle: "oblique", padding: "10px" }}>
-                {problem.output[0]}
-              </pre>
-            </>
-          )}
-        </div>
-      </div>
+
+      <ProblemView problem = {problem}></ProblemView>
       <div
         style={{
           display: "flex",
@@ -261,37 +224,106 @@ const CodeView = () => {
             theme={selectedTheme}
             value={codeValue}
             onChange={handleCodeChange}
-            />
-            {submit && !verdict && (
-              <>
-                <Alert severity="info">
-                  <AlertTitle>Processing</AlertTitle>
-                  Running testcases — <strong>Submission Queued!</strong>
-                </Alert>
-              </>
-            )}
-            {submit && verdict && (
-              <>
-                <Alert severity="success">
-                  <AlertTitle>Success</AlertTitle>
-                  testcases passed — <strong>Submited succesfully!</strong>
-                </Alert>
-              </>
-            )}
-            {!submit && verdict && (
-              <>
-                <Alert severity="warning">
-                  <AlertTitle>Failed</AlertTitle>
-                  testcases failed — <strong>Wrong submission</strong>
-                </Alert>
-                <h3>Expected Output:</h3>
-                <br></br>
-                <pre>{problem.output[0]}</pre>
-                <h3>Recived Output:</h3>
-                <br></br>
-                <pre>{output.data}</pre>
-              </>
-            )}
+          />
+          {submit && !verdict && (
+            <>
+              <Alert severity="info">
+                <AlertTitle>Processing</AlertTitle>
+                Running testcases — <strong>Submission Queued!</strong>
+              </Alert>
+            </>
+          )}
+          {submit && verdict && (
+            <>
+              <Alert severity="success">
+                <AlertTitle>Success</AlertTitle>
+                testcases passed — <strong>Submited succesfully!</strong>
+              </Alert>
+            </>
+          )}
+          {!submit && verdict && (
+            <>
+              <Alert severity="warning">
+                <AlertTitle>Failed</AlertTitle>
+                testcases failed — <strong>Wrong submission</strong>
+              </Alert>
+              <h3>Expected Output:</h3>
+              <hr></hr>
+              <pre>{problem.output[0]}</pre>
+              <h3>Recived Output:</h3>
+              <hr></hr>
+              <pre>{output[0]}</pre>
+            </>
+          )}
+          {!submit && !verdict && problem && !run && (
+            <>
+              <textarea
+                style={{ margin: "50px", alignContent: "left" }}
+                value={customInput}
+                onChange={(e) => setCustomInput(e.target.value)}
+                rows="5"
+                cols="50"
+                placeholder={problem.input[0]}
+              />
+              <ColorButton variant="contained" onClick={handleCustomInput}>
+                RUN
+              </ColorButton>
+            </>
+          )}
+          {!submit && !verdict && run && (
+            <>
+              <div>
+                <div>
+                  <h3>
+                    Input:
+                    <IconButton
+                      onClick={handleCopyCustomInput}
+                      style={{ marginLeft: "10px" }}
+                    >
+                      <FileCopyIcon />
+                    </IconButton>
+                  </h3>
+                  <hr />
+                  <textarea
+                    style={{ margin: "50px", alignContent: "left" }}
+                    value={customInput}
+                    onChange={(e) => {
+                      setCustomInput(e.target.value);
+                      setRun(false);
+                    }}
+                    rows="5"
+                    cols="50"
+                  />
+                </div>
+                <div>
+                  <h3>
+                    Output:
+                    <IconButton
+                      onClick={handleCopyUserOutput}
+                      style={{ marginLeft: "10px" }}
+                    >
+                      <FileCopyIcon />
+                    </IconButton>
+                  </h3>
+                  <hr />
+                  <textarea
+                    style={{ margin: "50px", alignContent: "left" }}
+                    value={customInput}
+                    onChange={(e) => {
+                      setCustomInput(e.target.value);
+                    }}
+                    rows="5"
+                    cols="50"
+                  />
+                </div>
+                <div>
+                  <ColorButton variant="contained" onClick={handleCustomInput}>
+                    RUN
+                  </ColorButton>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>

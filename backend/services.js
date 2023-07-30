@@ -1,4 +1,5 @@
 const fs = require('fs');
+const fsExtra = require('fs-extra');
 const path = require('path');
 const fetch = require('node-fetch');
 const axios = require('axios');
@@ -12,18 +13,18 @@ const problem = require('./models/problem.model');
 
 const listProblems = () => {
   return new Promise((resolve,reject) => {
-
+    
     problems.find()
-      .then((problems) => {
-        resolve(problems)
-      })
-      .catch((err) => reject(err));
+    .then((problems) => {
+      resolve(problems)
+    })
+    .catch((err) => reject(err));
     console.log("listProblems");
   })
 };
 
 const addProblem = (data) =>{
-    // name:{ type: String, required: true},
+  // name:{ type: String, required: true},
     // description: {type: String, required: true},
     // constraints: {type: String, required: true},
     // testcases: {type: [String], required: true},
@@ -37,7 +38,7 @@ const addProblem = (data) =>{
       const output = data.output;
       const date = Date.now();
       const problem = new problems({
-          name,
+        name,
           description,
           constraints,
           input,
@@ -53,15 +54,15 @@ const addProblem = (data) =>{
       console.log("services.addProblem : added problem succesfully!");
     })
     
-
-};
-
-const getProblem = (id) => {
-  return new Promise((resolve, reject) => {
-
-    problems.findById(id).then((problem) => {
-      console.log(problem);
-      resolve(problem);
+    
+  };
+  
+  const getProblem = (id) => {
+    return new Promise((resolve, reject) => {
+      
+      problems.findById(id).then((problem) => {
+        console.log(problem);
+        resolve(problem);
     }) 
     .catch(err => reject(err));
     console.log("services.getProblem : feteched problem successfully!!")
@@ -96,19 +97,21 @@ const addSubmission = (data) => {
     const input = data.input;
     const output = data.output;
     const date = Date.now();
+    const basename = problemID+'_'+userID+'_'+date;
     const filename = problemID+'_'+userID+'_'+date+'.'+language;
-    const inputFile = problemID+'_'+'input'+'.'+'txt';
-    const outputFile = problemID+'_'+'output'+'.'+'txt';
-    const inputString = data.input.join('\n');
-    const outputString = data.output.join('\n');
     fs.writeFileSync(path.join(__dirname,'usersubmissions/'+filename), code, 'utf8');
-    if(!fs.existsSync(path.join(__dirname,'usersubmissions/'+inputFile))) {fs.writeFileSync(path.join(__dirname,'usersubmissions/'+inputFile), inputString, 'utf-8');}
-    const body = {filename, input, output};
+    const body = {filename, input, output,code};
     axios.post('http://localhost:3001/compile',body).then((data) => {
-      console.log(data, "data");
-      const useroutput = data.data;
-      console.log(useroutput);
-      const verdict = (data.data == outputString)?"sucesss":"failure";
+      const userOutput = fs.readFileSync(path.join(__dirname,'usersubmissions/'+basename+'.'+'txt'),'utf8').split('~\n').slice(0,-1);
+      let verdict = "";
+      for(i = 0;i<output.length;i++){
+        if(output[i] != userOutput[i]){
+          verdict = "WA";
+          break;
+        }
+        // timelimit to be checked;
+      }
+      if(verdict == "") verdict = "AC";
       const submission = new submissions({
         problemID,
         userID,
@@ -119,23 +122,24 @@ const addSubmission = (data) => {
         output,
         date,
       });
-      data.useroutput = useroutput;
+      console.log(verdict, ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+      console.log(userOutput);
+      // data.userOutput = userOutput; 
       submission.save().then((data) =>{
-        resolve(data);
-        //console.log(data);
-      })
-      .catch(err => reject(err));
-      console.log("services.addSubmission : added submission succesfully!");
-    })
-      
+        const test = {verdict : data.verdict,userOutput};
+        resolve(test);
+        console.log(userOutput);
+        console.log(data);
+        // fsExtra.emptyDirSync(__dirname+'usersubmissions/');
+  });
     });
-    
 
+});
 };
 
 const getSubmission = (id) => {
   return new Promise((resolve, reject) => {
-
+    
     submissions.findById(id).then((problem) => {
       console.log(problem);
       resolve(problem);
