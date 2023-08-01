@@ -65,7 +65,7 @@ const App = () => {
           <div style={{ display: "flex", alignItems: "center" }}>
             {isLoggedIn && (
               <a
-                href="/problems"
+                href="/#/problems"
                 style={{
                   marginLeft: "5px",
                   animation: "rainbow 5s infinite",
@@ -80,7 +80,7 @@ const App = () => {
           <div style={{ display: "flex", alignItems: "center" }}>
             {isLoggedIn && (
               <a
-                href="/usersubmissions"
+                href="/#/usersubmissions"
                 style={{
                   marginLeft: "5px",
                   animation: "rainbow 5s infinite",
@@ -104,7 +104,7 @@ const App = () => {
                 >
                   Welcome,
                   <a
-                    href="/profile"
+                    href="/#/profile"
                     style={{
                       marginLeft: "5px",
                       animation: "rainbow 5s infinite",
