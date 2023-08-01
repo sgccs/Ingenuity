@@ -3,7 +3,6 @@ import List from '@mui/material/List';
 import axios from 'axios';
 import { baseUrl } from '../constants';
 import Usersubmissions from '../components/UserSubmission';
-import { useNavigate } from 'react-router-dom';
 
 
 const UserSubmissions = () => {
