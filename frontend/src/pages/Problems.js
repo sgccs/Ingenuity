@@ -3,14 +3,10 @@ import List from '@mui/material/List';
 import axios from 'axios';
 import { baseUrl } from '../constants';
 import Problem from '../components/Problem';
-import { useNavigate } from 'react-router-dom';
-import LogOut from '../components/LogOut';
-
 
 const Problems = () => {
     
     const [problems,setProblems] = useState([]);
-    const navigate = useNavigate();
     useEffect(() => {
         // fetch problems
         fetchProblems();

@@ -4,7 +4,6 @@ import { baseUrl } from '../constants';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
-import Signup from './SignUp';
 
 const Login = (props) => {
   const [username, setUsername] = useState('');

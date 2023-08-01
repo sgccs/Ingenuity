@@ -5,7 +5,6 @@ import { baseUrl } from '../constants';
 import Submission from '../components/Submission';
 import { useParams } from 'react-router';
 
-const token = localStorage.getItem('token');
 
 
 const Submissionslist = () => {

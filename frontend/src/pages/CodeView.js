@@ -15,7 +15,6 @@ import Button from "@mui/material/Button";
 import { purple } from "@mui/material/colors";
 import { styled } from "@mui/material/styles";
 import ProblemView from "../components/ProblemView";
-import { useNavigate } from 'react-router-dom';
 
 
 const CodeView = (props) => {
@@ -37,7 +36,6 @@ const CodeView = (props) => {
       backgroundColor: purple[700],
     },
   }));
-  const navigate = useNavigate();
 
   const fetchProblem = () => {
     const token = localStorage.getItem('token');
