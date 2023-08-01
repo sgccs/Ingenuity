@@ -27,6 +27,14 @@
 .App-link {
   color: #61dafb;
 }
+@keyframes rainbow {
+  0% { color: red; }
+  20% { color: orange; }
+  40% { color: yellow; }
+  60% { color: green; }
+  80% { color: blue; }
+  100% { color: violet; }
+}
 
 @keyframes App-logo-spin {
   from {

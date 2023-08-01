@@ -28,6 +28,7 @@ const dockerCreation = (data) => {
 
     // Loop through each test case and set it as a separate environment variable
     const inputLength = data.input.length;
+    console.log(inputLength);
     const envVariables = [
       `LANG=${lang}`,
       `FILENAME=${data.filename.split('.')[0]}`,

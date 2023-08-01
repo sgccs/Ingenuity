@@ -13,8 +13,9 @@ const Viewsubmission = () => {
   const [submission, setSubmission] = useState(null);
 
   const fetchCode = () => {
+    const token = localStorage.getItem('token');
     axios
-      .get(baseUrl + "/submission/" + id)
+      .get(baseUrl + "/submission/" + id,{headers:{authorization: token, 'Access-Control-Allow-Origin': '*'}})
       .then((res) => {
         console.log(res.data);
         setSubmission(res.data);
@@ -75,7 +76,6 @@ const Viewsubmission = () => {
               onChange={handleThemeChange}
               style={{ fontSize: "0.8rem", padding: "4px" }}
               MenuProps={{
-                getContentAnchorEl: null,
                 anchorOrigin: { vertical: "bottom", horizontal: "left" },
               }}
             >

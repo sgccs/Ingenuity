@@ -23,15 +23,15 @@ const ProblemView = (props) => {
       }}
     >
       <h1>{problem.name}</h1>
-      <div class="problem-description">
+      <div className="problem-description">
         <p style={{ fontStyle: "italic" }}>{problem.description}</p>
       </div>
-      <div class="constraints" style={{ textAlign: "left", margin: "10px" }}>
+      <div className="constraints" style={{ textAlign: "left", margin: "10px" }}>
         <h3>constraints:</h3>
         <hr></hr>
         <p style={{ fontStyle: "oblique" }}>{problem.constraints}</p>
       </div>
-      <div class="input" style={{ textAlign: "left", margin: "10px" }}>
+      <div className="input" style={{ textAlign: "left", margin: "10px" }}>
         <h3>
           Input:
           <IconButton onClick={handleCopyInput} style={{ marginLeft: "10px" }}>
@@ -47,7 +47,7 @@ const ProblemView = (props) => {
           </>
         )}
       </div>
-      <div class="output" style={{ textAlign: "left", margin: "10px" }}>
+      <div className="output" style={{ textAlign: "left", margin: "10px" }}>
         <h3>
           Output:
           <IconButton onClick={handleCopyOutput} style={{ marginLeft: "10px" }}>

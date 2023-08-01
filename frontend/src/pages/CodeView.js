@@ -15,8 +15,10 @@ import Button from "@mui/material/Button";
 import { purple } from "@mui/material/colors";
 import { styled } from "@mui/material/styles";
 import ProblemView from "../components/ProblemView";
+import { useNavigate } from 'react-router-dom';
 
-const CodeView = () => {
+
+const CodeView = (props) => {
   const { id } = useParams();
   const [selectedLanguage, setSelectedLanguage] = useState("cpp");
   const [selectedTheme, setSelectedTheme] = useState("vs-dark");
@@ -35,16 +37,20 @@ const CodeView = () => {
       backgroundColor: purple[700],
     },
   }));
+  const navigate = useNavigate();
 
   const fetchProblem = () => {
+    const token = localStorage.getItem('token');
+
     axios
-      .get(baseUrl + "/problems/" + id)
+      .get(baseUrl + "/problems/" + id,{headers:{authorization: token, 'Access-Control-Allow-Origin': '*'}})
       .then((res) => {
-        console.log(res.data);
         // set problems
         setProblem(res.data); // problems = [{],{}]
       })
-      .catch((err) => console.log("Error in fetching details", err));
+      .catch((err) => {
+        console.log("Error in fetching details", err);
+      });
   };
 
   useEffect(() => {
@@ -89,25 +95,27 @@ const CodeView = () => {
   };
 
   const handleCopyCustomInput = () => {
-    navigator.clipboard.writeText(problem.input[0]);
+    navigator.clipboard.writeText(customInput);
   };
 
   const handleCopyUserOutput = () => {
-    navigator.clipboard.writeText(problem.output[0]);
+    navigator.clipboard.writeText(output);
   };
 
   const handleSubmit = () => {
     setSubmit(true);
+    const username = props.username;
     const body = {
       problemID: id,
-      userID: "sgccs",
+      userID: username, 
       code: codeValue,
       language: selectedLanguage,
       input: problem.input,
       output: problem.output,
     };
+    const token = localStorage.getItem('token');
     axios
-      .post(baseUrl + "/submission", body)
+      .post(baseUrl + "/submission", body,{headers:{authorization: token, 'Access-Control-Allow-Origin': '*'}})
       .then((res) => {
         console.log(res);
         if (res.data.verdict === "AC") {
@@ -122,8 +130,25 @@ const CodeView = () => {
       })
       .catch((err) => console.log("Error in fetching details", err));
   };
-  const handleCustomInput = () => {
+  const handleRun = () => {
     setRun(true);
+    const username = props.username;
+    const body = {
+      problemID: id,
+      userID: username, 
+      code: codeValue,
+      language: selectedLanguage,
+      input: customInput,
+    };
+    const token = localStorage.getItem('token');
+    axios
+      .post(baseUrl + "/run", body,{headers:{authorization: token, 'Access-Control-Allow-Origin': '*'}})
+      .then((res) => {
+        console.log(res.data.userOutput)
+        setOutput(res.data.userOutput);
+      })
+      
+      .catch((err) => console.log("Error in fetching details", err));
   };
 
   const handleFullscreen = () => {
@@ -161,7 +186,6 @@ const CodeView = () => {
               onChange={handleThemeChange}
               style={{ fontSize: "0.8rem", padding: "4px" }}
               MenuProps={{
-                getContentAnchorEl: null,
                 anchorOrigin: { vertical: "bottom", horizontal: "left" },
               }}
             >
@@ -189,7 +213,6 @@ const CodeView = () => {
               onChange={handleLanguageChange}
               style={{ fontSize: "0.8rem", padding: "4px" }}
               MenuProps={{
-                getContentAnchorEl: null,
                 anchorOrigin: { vertical: "bottom", horizontal: "left" },
               }}
             >
@@ -265,12 +288,12 @@ const CodeView = () => {
                 cols="50"
                 placeholder={problem.input[0]}
               />
-              <ColorButton variant="contained" onClick={handleCustomInput}>
+              <ColorButton variant="contained" onClick={handleRun}>
                 RUN
               </ColorButton>
             </>
           )}
-          {!submit && !verdict && run && (
+          {!submit && !verdict && run && output &&(
             <>
               <div>
                 <div>
@@ -308,20 +331,26 @@ const CodeView = () => {
                   <hr />
                   <textarea
                     style={{ margin: "50px", alignContent: "left" }}
-                    value={customInput}
-                    onChange={(e) => {
-                      setCustomInput(e.target.value);
-                    }}
+                    value={output}
                     rows="5"
                     cols="50"
+                    readOnly
                   />
                 </div>
                 <div>
-                  <ColorButton variant="contained" onClick={handleCustomInput}>
+                  <ColorButton variant="contained" onClick={handleRun}>
                     RUN
                   </ColorButton>
                 </div>
               </div>
+            </>
+          )}
+          {!submit && !verdict && run && !output &&(
+            <>
+              <Alert severity="info">
+                <AlertTitle>Processing</AlertTitle>
+                Running testcases — <strong>Submission Queued!</strong>
+              </Alert>
             </>
           )}
         </div>
