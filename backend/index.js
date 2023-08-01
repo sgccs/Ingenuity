@@ -59,6 +59,10 @@ app.post("/submission", (req, res) => {
   addSubmission(req, res);
 });
 
+app.get("/usersubmissions/:id", (req,res) => {
+  getSubmissions(req,res);
+}); // this will get all the particular user submissions.
+
 app.post("/run", (req,res) => {
   run(req,res);
 });
@@ -189,6 +193,22 @@ const getSubmission = (req, res) => {
         });
     } else res.status(401).send("not authorized");
   });
+};
+
+const getSubmissions = (req, res) => {
+  authorizeRequest(req).then((data) => {
+    if (data) {
+      const id = req.params["id"];
+      services
+        .getSubmissions(id)
+        .then((data) => {
+          res.send(data).status(200);
+        })
+        .catch((err) => {
+          res.send(err).status(500);
+        });
+    } else res.status(401).send("not authorized");
+  }); 
 };
 
 

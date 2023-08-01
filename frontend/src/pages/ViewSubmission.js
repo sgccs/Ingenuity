@@ -76,7 +76,6 @@ const Viewsubmission = () => {
               onChange={handleThemeChange}
               style={{ fontSize: "0.8rem", padding: "4px" }}
               MenuProps={{
-                getContentAnchorEl: null,
                 anchorOrigin: { vertical: "bottom", horizontal: "left" },
               }}
             >

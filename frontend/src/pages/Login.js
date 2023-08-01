@@ -4,6 +4,7 @@ import { baseUrl } from '../constants';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
+import Signup from './SignUp';
 
 const Login = (props) => {
   const [username, setUsername] = useState('');
@@ -62,6 +63,7 @@ const Login = (props) => {
         <Button variant="contained" color="primary" onClick={handleLogin}>
           Login
         </Button>
+        create a new account <a href='/signup'>Signup</a>
       </div>
       {errorMessage && <Typography color="error">{errorMessage}</Typography>}
     </div>

@@ -15,6 +15,8 @@ import Button from "@mui/material/Button";
 import { purple } from "@mui/material/colors";
 import { styled } from "@mui/material/styles";
 import ProblemView from "../components/ProblemView";
+import { useNavigate } from 'react-router-dom';
+
 
 const CodeView = (props) => {
   const { id } = useParams();
@@ -35,17 +37,20 @@ const CodeView = (props) => {
       backgroundColor: purple[700],
     },
   }));
+  const navigate = useNavigate();
 
   const fetchProblem = () => {
     const token = localStorage.getItem('token');
+
     axios
       .get(baseUrl + "/problems/" + id,{headers:{authorization: token, 'Access-Control-Allow-Origin': '*'}})
       .then((res) => {
-        console.log(res.data);
         // set problems
         setProblem(res.data); // problems = [{],{}]
       })
-      .catch((err) => console.log("Error in fetching details", err));
+      .catch((err) => {
+        console.log("Error in fetching details", err);
+      });
   };
 
   useEffect(() => {
@@ -181,7 +186,6 @@ const CodeView = (props) => {
               onChange={handleThemeChange}
               style={{ fontSize: "0.8rem", padding: "4px" }}
               MenuProps={{
-                getContentAnchorEl: null,
                 anchorOrigin: { vertical: "bottom", horizontal: "left" },
               }}
             >
@@ -209,7 +213,6 @@ const CodeView = (props) => {
               onChange={handleLanguageChange}
               style={{ fontSize: "0.8rem", padding: "4px" }}
               MenuProps={{
-                getContentAnchorEl: null,
                 anchorOrigin: { vertical: "bottom", horizontal: "left" },
               }}
             >
@@ -290,7 +293,7 @@ const CodeView = (props) => {
               </ColorButton>
             </>
           )}
-          {!submit && !verdict && run && (
+          {!submit && !verdict && run && output &&(
             <>
               <div>
                 <div>
@@ -331,6 +334,7 @@ const CodeView = (props) => {
                     value={output}
                     rows="5"
                     cols="50"
+                    readOnly
                   />
                 </div>
                 <div>
@@ -339,6 +343,14 @@ const CodeView = (props) => {
                   </ColorButton>
                 </div>
               </div>
+            </>
+          )}
+          {!submit && !verdict && run && !output &&(
+            <>
+              <Alert severity="info">
+                <AlertTitle>Processing</AlertTitle>
+                Running testcases — <strong>Submission Queued!</strong>
+              </Alert>
             </>
           )}
         </div>
