@@ -37,21 +37,21 @@ const CodeView = (props) => {
     },
   }));
 
-  const fetchProblem = () => {
-    const token = localStorage.getItem('token');
-
-    axios
-      .get(baseUrl + "/problems/" + id,{headers:{authorization: token, 'Access-Control-Allow-Origin': '*'}})
-      .then((res) => {
-        // set problems
-        setProblem(res.data); // problems = [{],{}]
-      })
-      .catch((err) => {
-        console.log("Error in fetching details", err);
-      });
-  };
-
+  
   useEffect(() => {
+    const fetchProblem = () => {
+      const token = localStorage.getItem('token');
+  
+      axios
+        .get(baseUrl + "/problems/" + id,{headers:{authorization: token, 'Access-Control-Allow-Origin': '*'}})
+        .then((res) => {
+          // set problems
+          setProblem(res.data); // problems = [{],{}]
+        })
+        .catch((err) => {
+          console.log("Error in fetching details", err);
+        });
+    };
     // fetch problem
     fetchProblem();
   }, [id]);

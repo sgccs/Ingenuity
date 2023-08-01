@@ -12,18 +12,18 @@ const Viewsubmission = () => {
   const [selectedTheme, setSelectedTheme] = useState("vs-dark");
   const [submission, setSubmission] = useState(null);
 
-  const fetchCode = () => {
-    const token = localStorage.getItem('token');
-    axios
-      .get(baseUrl + "/submission/" + id,{headers:{authorization: token, 'Access-Control-Allow-Origin': '*'}})
-      .then((res) => {
-        console.log(res.data);
-        setSubmission(res.data);
-      })
-      .catch((err) => console.log("Error in fetching details", err));
-  };
-
+  
   useEffect(() => {
+    const fetchCode = () => {
+      const token = localStorage.getItem('token');
+      axios
+        .get(baseUrl + "/submission/" + id,{headers:{authorization: token, 'Access-Control-Allow-Origin': '*'}})
+        .then((res) => {
+          console.log(res.data);
+          setSubmission(res.data);
+        })
+        .catch((err) => console.log("Error in fetching details", err));
+    };
     fetchCode();
   }, [id]);
 

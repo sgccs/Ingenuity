@@ -13,18 +13,18 @@ const Submissionslist = () => {
 
     useEffect(() => {
         // fetch problems
+        const fetchSubmissions = () => {
+        const token = localStorage.getItem('token');
+        axios.get(baseUrl + '/submissions/'+id,{headers:{authorization: token, 'Access-Control-Allow-Origin': '*'}}).then(res => {
+                console.log(res.data);
+                // set submissins
+                setSubmissions(res.data); // submissions = [{],{}]
+            }).catch(err => console.log("Error in fetching details", err));
+    
+        }
         fetchSubmissions();
     },[id]) 
 
-    const fetchSubmissions = () => {
-    const token = localStorage.getItem('token');
-    axios.get(baseUrl + '/submissions/'+id,{headers:{authorization: token, 'Access-Control-Allow-Origin': '*'}}).then(res => {
-            console.log(res.data);
-            // set submissins
-            setSubmissions(res.data); // submissions = [{],{}]
-        }).catch(err => console.log("Error in fetching details", err));
-
-    }
 
     return (
         <div >
