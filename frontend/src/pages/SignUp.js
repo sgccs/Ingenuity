@@ -95,7 +95,8 @@ const Signup = (props) => {
           Signup
         </Button>
         )
-        }
+      }
+      create a new account <a href='/#/login'>Login</a>
       </div>
       {errorMessage && <Typography color="error">{errorMessage}</Typography>}
     </div>

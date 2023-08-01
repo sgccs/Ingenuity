@@ -62,7 +62,7 @@ const Login = (props) => {
         <Button variant="contained" color="primary" onClick={handleLogin}>
           Login
         </Button>
-        create a new account <a href='/signup'>Signup</a>
+        create a new account <a href='/#/signup'>Signup</a>
       </div>
       {errorMessage && <Typography color="error">{errorMessage}</Typography>}
     </div>
