@@ -13,8 +13,9 @@ const Viewsubmission = () => {
   const [submission, setSubmission] = useState(null);
 
   const fetchCode = () => {
+    const token = localStorage.getItem('token');
     axios
-      .get(baseUrl + "/submission/" + id)
+      .get(baseUrl + "/submission/" + id,{headers:{authorization: token, 'Access-Control-Allow-Origin': '*'}})
       .then((res) => {
         console.log(res.data);
         setSubmission(res.data);

@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import Button from '@mui/material/Button';
 import ListItemText from "@mui/material/ListItemText";
 import { ListItemButton } from "@mui/material";
-import { borderLeft } from "@mui/system";
 
 const Problem = (props) => {
   const navigate = useNavigate();

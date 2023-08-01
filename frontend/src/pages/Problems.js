@@ -7,18 +7,24 @@ import Problem from '../components/Problem';
 const Problems = () => {
     
     const [problems,setProblems] = useState([]);
-    
+
     useEffect(() => {
         // fetch problems
         fetchProblems();
     },[]) 
 
     const fetchProblems = () => {
-        axios.get(baseUrl + '/problems').then(res => {
+        const token = localStorage.getItem('token');
+        console.log(token);
+        
+        axios.get(baseUrl + '/problems',{headers:{authorization: token, 'Access-Control-Allow-Origin': '*'}}).then(res => {
             console.log(res.data);
             // set problems
             setProblems(res.data); // problems = [{],{}]
-        }).catch(err => console.log("Error in fetching details", err));
+        }).catch(err => {
+            console.log("Error in fetching details", err);
+            
+        });
 
     }
 
@@ -29,7 +35,7 @@ const Problems = () => {
             {problems && problems.length>0?problems?.map((problem) => (
                 <Problem problem={problem} />
             )):
-            <p>probl not load</p>}
+            <p>problems loading...</p>}
             </List>
         </div>
     );

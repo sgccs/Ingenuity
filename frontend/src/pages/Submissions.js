@@ -5,6 +5,9 @@ import { baseUrl } from '../constants';
 import Submission from '../components/Submission';
 import { useParams } from 'react-router';
 
+const token = localStorage.getItem('token');
+
+
 const Submissionslist = () => {
     const { id } = useParams();
     const [submissions,setSubmissions] = useState([]);
@@ -15,7 +18,8 @@ const Submissionslist = () => {
     },[id]) 
 
     const fetchSubmissions = () => {
-        axios.get(baseUrl + '/submissions/'+id).then(res => {
+    const token = localStorage.getItem('token');
+    axios.get(baseUrl + '/submissions/'+id,{headers:{authorization: token, 'Access-Control-Allow-Origin': '*'}}).then(res => {
             console.log(res.data);
             // set submissins
             setSubmissions(res.data); // submissions = [{],{}]

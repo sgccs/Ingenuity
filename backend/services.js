@@ -1,6 +1,8 @@
+require('dotenv').config();
 const fs = require('fs');
 const fsExtra = require('fs-extra');
 const path = require('path');
+const jwt = require('jsonwebtoken');
 const fetch = require('node-fetch');
 const axios = require('axios');
 const { connection } = require("./db");
@@ -8,12 +10,10 @@ const router = require("express").Router();
 let problems = require("./models/problem.model");
 let users = require("./models/user.model");
 let submissions = require("./models/submission.model");
-const problem = require('./models/problem.model');
-
+const secretKey = process.env.JWT_SECRET;
 
 const listProblems = () => {
   return new Promise((resolve,reject) => {
-    
     problems.find()
     .then((problems) => {
       resolve(problems)
@@ -130,11 +130,78 @@ const addSubmission = (data) => {
         resolve(test);
         console.log(userOutput);
         console.log(data);
-        // fsExtra.emptyDirSync(__dirname+'usersubmissions/');
+        const folderPath = path.join(__dirname, 'usersubmissions');
+        fs.readdir(folderPath, (err, files) => {
+          if (err) {
+            console.error('Error reading folder:', err);
+            return;
+          }
+        
+          files.forEach((file) => {
+            // Check if the file is not a .sh file
+            if (!file.endsWith('.sh')) {
+              const filePath = path.join(folderPath, file);
+        
+              fs.unlink(filePath, (err) => {
+                if (err) {
+                  console.error('Error deleting file:', err);
+                } else {
+                  console.log('File deleted:', file);
+                }
+              });
+            }
+          });
+        });
   });
     });
 
 });
+};
+
+const run = (data) => {
+  return new Promise((resolve,reject) => {
+    const problemID = data.problemID;
+    const userID = data.userID;
+    const code = data.code;
+    const language = data.language;
+    const input = [data.input];
+    const output = '';
+    const date = Date.now();
+    const basename = problemID+'_'+userID+'_'+date;
+    const filename = problemID+'_'+userID+'_'+date+'.'+language;
+    fs.writeFileSync(path.join(__dirname,'usersubmissions/'+filename), code, 'utf8');
+    const body = {filename, input,output,code};
+    console.log(input);
+    axios.post('http://localhost:3001/compile',body).then((data) => {
+      const userOutput = fs.readFileSync(path.join(__dirname,'usersubmissions/'+basename+'.'+'txt'),'utf8').split('~\n').slice(0,-1);
+      console.log(userOutput);
+        const test = {userOutput};
+        resolve(test);
+        console.log(userOutput);
+        const folderPath = path.join(__dirname, 'usersubmissions');
+        fs.readdir(folderPath, (err, files) => {
+          if (err) {
+            console.error('Error reading folder:', err);
+            return;
+          }
+          files.forEach((file) => {
+            // Check if the file is not a .sh file
+            if (!file.endsWith('.sh')) {
+              const filePath = path.join(folderPath, file);
+        
+              fs.unlink(filePath, (err) => {
+                if (err) {
+                  console.error('Error deleting file:', err);
+                } else {
+                  console.log('File deleted:', file);
+                }
+              });
+            }
+          });
+        });
+    });
+
+  });
 };
 
 const getSubmission = (id) => {
@@ -154,11 +221,15 @@ const addUser = (data) => {
   // details: {type: Object, required: true},
   // date: { type: Date, required: true },
   return new Promise((resolve, reject) => {
-    const _id = data._id;
+    const _id = data.username;
+    const password = data.password;
+    const type = "User";
     const details = data.details;
     const date = Date.now();
     const user = new users({
         _id,
+        password,
+        type,
         details,
         date,
     });
@@ -172,4 +243,22 @@ const addUser = (data) => {
   })
 };
 
-module.exports = { listProblems, getProblem, listSubmissions, addProblem, addSubmission, addUser, getSubmission};
+const verifyUser = (data) => {
+  return new Promise((resolve,reject) => {
+    users.findById(data.username).then((user) => {
+      if(data.password === user.password){
+        const token = jwt.sign({ username: data.username }, secretKey, { expiresIn: '1h' });
+        resolve({token,username:data.username});
+      }
+      else{
+        reject('check your password!!! ;!')
+      }
+    })
+    .catch(err => {
+      console.log('in catch'+ err);
+      reject('invalid user', err)})
+  }
+  )
+};
+
+module.exports = { listProblems, getProblem, listSubmissions, addProblem, addSubmission, run, addUser, getSubmission, verifyUser};

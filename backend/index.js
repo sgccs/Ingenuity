@@ -1,7 +1,10 @@
-const express = require('express');
-const cors = require('cors');
+const express = require("express");
+const cors = require("cors");
+const jwt = require('jsonwebtoken');
 const services = require("./services");
-
+const validate = require("./validation");
+const User = require('./models/user.model');
+const secretKey = process.env.JWT_SECRET;
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -25,112 +28,195 @@ app.use(express.json());
 // app.use('/users', usersRouter);
 
 app.listen(port, () => {
-    console.log(`Server is running on port: ${port}`);
+  console.log(`Server is running on port: ${port}`);
 });
 
 app.get("/ping", (req, res) => {
-    res.send({status: "healthy"}).status(200);
-})
-
-app.get('/problems', (req, res) => {
-    listProblems(req, res);
-
+  res.send({ status: "healthy" }).status(200);
 });
 
-app.post('/problem/add', (req, res) => {
-    addProblem(req, res);
-}); 
-
-app.get('/problems/:id', (req, res) => {
-    getProblem(req, res);
-
+app.get("/problems", (req, res) => {
+  listProblems(req, res);
 });
 
-app.get('/submissions/:id', (req, res) => {
-    listSubmissions(req, res);
+app.post("/problem/add", (req, res) => {
+  addProblem(req, res);
+});
 
+app.get("/problems/:id", (req, res) => {
+  getProblem(req, res);
+});
+
+app.get("/submissions/:id", (req, res) => {
+  listSubmissions(req, res);
 }); // this list's all the submissions for a particular problem
 
-app.get('/submission/:id', (req,res) => {
-    getSubmission(req,res);
+app.get("/submission/:id", (req, res) => {
+  getSubmission(req, res);
 }); // this will return a particular submission
 
-app.post('/submission' , (req,res) =>{
-    addSubmission(req,res);
-})
+app.post("/submission", (req, res) => {
+  addSubmission(req, res);
+});
 
-app.post('/user/add', (req,res) =>{
-    addUser(req,res);
-})
+app.post("/run", (req,res) => {
+  run(req,res);
+});
 
-const listProblems = (req,res) => {
-    services.listProblems().then((data) =>{
-        res.send(data).status(200);
-    })
-    .catch(err => {
-        res.send(err).status(500);
-    }) 
+ 
+app.post("/signup", (req, res) =>{
+    signup(req, res);
+});
+
+app.post("/login", (req,res) => {
+    login(req,res);
+});
+
+
+const listProblems = (req, res) => {
+  authorizeRequest(req).then((data) => {
+    if (data) {
+      console.log('authrozied sucessfully');
+      services
+        .listProblems()
+        .then((data) => {
+          res.send(data).status(200);
+        })
+        .catch((err) => {
+          res.send(err).status(500);
+        });
+    } else{
+      console.log('not authrorized')
+      res.status(401).send("not authorized");
+    } 
+  }).catch(err => res.status(401).send(err));
 };
 
-const addProblem = (req,res) =>{
-    const data = req.body;
-    console.log(req.body);
-    services.addProblem(data).then((data) => {
-        res.send(data).status(201);
-    })
-    .catch(err => {
-        res.send(err).status(500);
-    })
+const addProblem = (req, res) => {
+  authorizeRequest(req).then((data) => {
+    if (data) {
+      const data = req.body;
+      console.log(req.body);
+      services
+        .addProblem(data)
+        .then((data) => {
+          res.send(data).status(201);
+        })
+        .catch((err) => {
+          res.send(err).status(500);
+        });
+    } else res.status(401).send("not authorized");
+  });
 };
 
 const getProblem = (req, res) => {
-    const id = req.params['id'];
-    services.getProblem(id).then((data) =>{
-        res.send(data).status(200);
-    })
-    .catch(err => {
-        res.send(err).status(500);
-    }) 
+  authorizeRequest(req).then((data) => {
+    if (data) {
+      const id = req.params["id"];
+      services
+        .getProblem(id)
+        .then((data) => {
+          res.send(data).status(200);
+        })
+        .catch((err) => {
+          res.send(err).status(500);
+        });
+    } else {
+      res.status(401).send("not authorized");
+    }
+  });
+};
+
+const listSubmissions = (req, res) => {
+  authorizeRequest(req).then((data) => {
+    if (data) {
+      const id = req.params["id"];
+      services
+        .listSubmissions(id)
+        .then((data) => {
+          res.send(data).status(200);
+        })
+        .catch((err) => {
+          res.send(err).status(500);
+        });
+    } else res.status(401).send("not authorized");
+  });
+};
+
+const addSubmission = (req, res) => {
+  authorizeRequest(req).then((data) => {
+    if (data) {
+      const data = req.body;
+      services
+        .addSubmission(data)
+        .then((data) => {
+          res.send(data).status(200);
+        })
+        .catch((err) => {
+          res.send(err).status(500);
+        });
+    } else res.status(401).send("not authorized");
+  });
+};
+
+const run = (req,res) => {
+  authorizeRequest(req).then((data) => {
+    if (data) {
+      const data = req.body;
+      services
+        .run(data)
+        .then((data) => {
+          res.send(data).status(200);
+        })
+        .catch((err) => {
+          res.send(err).status(500);
+        });
+    } else res.status(401).send("not authorized");
+});
+};
+
+const getSubmission = (req, res) => {
+  authorizeRequest(req).then((data) => {
+    if (data) {
+      const id = req.params["id"];
+      services
+        .getSubmission(id)
+        .then((data) => {
+          res.send(data).status(200);
+        })
+        .catch((err) => {
+          res.send(err).status(500);
+        });
+    } else res.status(401).send("not authorized");
+  });
 };
 
 
-const listSubmissions = (req,res) => {
-    const id = req.params['id'];
-    services.listSubmissions(id).then((data) =>{
-        res.send(data).status(200);
-    })
-    .catch(err => {
-        res.send(err).status(500);
-    }) 
-};
-
-const addSubmission = (req,res) => {
+const login = (req,res) => {
     const data = req.body;
-    services.addSubmission(data).then((data) =>{
+    return services.verifyUser(data).then((data) => {
         res.send(data).status(200);
     })
-    .catch(err => {
-        res.send(err).status(500);
+    .catch((err) => {
+      console.log('error in index');
+        res.send(err).status(401);
     })
-};
+    
+}
 
-const getSubmission = (req,res) => {
-    const id = req.params['id'];
-    services.getSubmission(id).then((data) => {
-        res.send(data).status(200);
-    })
-    .catch(err => {
-        res.send(err).status(500);
-    })
-};
-
-const addUser = (req,res) => {
+const signup = (req, res) => {
     const data = req.body;
-    console.log(req.body);
-    services.addUser(data).then((data) => {
-        res.send(data).status(201);
+    services
+    .addUser(data)
+    .then((data) => {
+        res.json('User added successfully!');
     })
-    .catch(err => {
-        res.send(err).status(500);
-    })
+    .catch((err) => {
+      res.send(err).status(500);
+    });
+}
+
+const authorizeRequest = (req) => {
+  const token = req.headers.authorization;
+  return validate.isvalid(token);
 };
