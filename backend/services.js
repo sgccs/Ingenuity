@@ -12,6 +12,8 @@ let users = require("./models/user.model");
 let submissions = require("./models/submission.model");
 const submission = require('./models/submission.model');
 const secretKey = process.env.JWT_SECRET;
+const bcrypt = require('bcrypt');
+const saltRounds = 10; 
 
 const listProblems = () => {
   return new Promise((resolve,reject) => {
@@ -230,57 +232,77 @@ const getSubmissions = (id) => {
 
 
 const addUser = (data) => {
-  // details: {type: Object, required: true},
-  // date: { type: Date, required: true },
   return new Promise((resolve, reject) => {
     users.findOne({ $or: [{ _id: data.username }, { 'details.email': data.details.email }] })
     .then((existingUser) => {
       if (existingUser) {
         return reject('User already exists.');
       }
-      const _id = data.username;
-      const password = data.password;
-      const type = "User";
-      const details = data.details;
-      const date = Date.now();
-      const user = new users({
+
+      // Hash the password before saving it
+      bcrypt.hash(data.password, saltRounds, (hashErr, hashedPassword) => {
+        if (hashErr) {
+          return reject('Error hashing password.');
+        }
+
+        const _id = data.username;
+        const password = hashedPassword; // Store the hashed password in the database
+        const type = "User";
+        const details = data.details;
+        const date = Date.now();
+
+        const user = new users({
           _id,
           password,
           type,
           details,
           date,
+        });
+
+        user.save()
+        .then((data) =>  {
+          console.log(data);
+          resolve('User added successfully!');
+        })
+        .catch(err => reject(err));
+
+        console.log("services.addUser : added user successfully!");
       });
-      user.save()
-      .then((data) =>  {
-        console.log(data);
-        resolve('User added successfully!')
-      })
-      .catch(err => reject(err));
-      console.log("services.addUser : added user succesfully!");
     })
     .catch((findErr) => {
       console.log(findErr);
       reject('Error finding existing user.');
     });
-  })
+  });
 };
 
 const verifyUser = (data) => {
-  return new Promise((resolve,reject) => {
-    users.findById(data.username).then((user) => {
-      if(data.password === user.password){
-        const token = jwt.sign({ username: data.username }, secretKey, { expiresIn: '1h' });
-        resolve({token,username:data.username});
-      }
-      else{
-        reject('check your password!!! ;!')
-      }
-    })
-    .catch(err => {
-      console.log('in catch'+ err);
-      reject('invalid user', err)})
-  }
-  )
+  return new Promise((resolve, reject) => {
+    users.findById(data.username)
+      .then((user) => {
+        if (!user) {
+          return reject('Invalid user.');
+        }
+
+        // Compare the provided password with the hashed password in the database
+        console.log(data.password , user.password);
+        bcrypt.compare(data.password, user.password, (compareErr, isMatch) => {
+          if (compareErr) {
+            return reject('Error comparing passwords.');
+          }
+          if (isMatch) {
+            const token = jwt.sign({ username: data.username }, secretKey, { expiresIn: '1h' });
+            resolve({ token, username: data.username });
+          } else {
+            reject('Invalid password.');
+          }
+        });
+      })
+      .catch((err) => {
+        console.log('in catch', err);
+        reject('Error finding user.', err);
+      });
+  });
 };
 
 module.exports = { listProblems, getProblem, listSubmissions, addProblem, addSubmission, run, addUser, getSubmission, getSubmissions, verifyUser};
