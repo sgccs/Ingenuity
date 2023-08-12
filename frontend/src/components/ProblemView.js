@@ -29,7 +29,7 @@ const ProblemView = (props) => {
       <div className="constraints" style={{ textAlign: "left", margin: "10px" }}>
         <h3>constraints:</h3>
         <hr></hr>
-        <p style={{ fontStyle: "oblique" }}>{problem.constraints}</p>
+        <pre style={{ fontStyle: "oblique" }}>{problem.constraints}</pre>
       </div>
       <div className="input" style={{ textAlign: "left", margin: "10px" }}>
         <h3>

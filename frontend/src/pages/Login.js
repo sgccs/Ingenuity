@@ -19,19 +19,20 @@ const Login = (props) => {
     axios
       .post(baseUrl + '/login', userData)
       .then((res) => {
+        console.log(res);
         const token = res.data.token;
         const username = res.data.username;
         // Save the token to local storage or session storage for future requests
         if(token){
           localStorage.setItem('token', token);
           localStorage.setItem('username', username);
-          props.validUser();
+          console.log(res.data.userType);
+          props.validUser(res.data.userType);
         }
         else{
           props.invalidUser();
-        setErrorMessage('Invalid username or password');
+          setErrorMessage(res.data);
         }
-        console.log(token);
         // Redirect to the problems page or any other protected route
         // window.location.href = '/problems';
       })
@@ -62,7 +63,7 @@ const Login = (props) => {
         <Button variant="contained" color="primary" onClick={handleLogin}>
           Login
         </Button>
-        create a new account <a href='/#/signup'>Signup</a>
+        create a new account <a href='/#/signup' style={{textDecoration : 'none'}}>Signup</a>
       </div>
       {errorMessage && <Typography color="error">{errorMessage}</Typography>}
     </div>

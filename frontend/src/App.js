@@ -15,6 +15,8 @@ import Login from "./pages/Login";
 import Signup from "./pages/SignUp";
 import LogOut from "./components/LogOut";
 import UserSubmissions from "./pages/UserSubmissions";
+import EmailVerification from "./pages/EmailVerification";
+import AddProblem from "./pages/AddProblem";
 
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(
@@ -23,10 +25,12 @@ const App = () => {
   const [username, setUserName] = useState(
     "" || localStorage.getItem("username")
   );
+  const [userType, setUserType] = useState(false);
 
-  const validUser = () => {
+  const validUser = (usertype) => {
     setIsLoggedIn(true);
     setUserName(localStorage.getItem("username"));
+    setUserType(usertype);
   };
 
   const invalidUser = () => {
@@ -38,6 +42,7 @@ const App = () => {
     setIsLoggedIn(false);
     setUserName("");
   };
+   
 
   return (
     <div className="App">
@@ -91,6 +96,21 @@ const App = () => {
               </a>
             )}
           </div>
+
+            {isLoggedIn && userType &&(
+          <div style={{ display: "flex", alignItems: "center" }}>
+              <a
+                href="/#/addproblem"
+                style={{
+                  marginLeft: "5px",
+                  animation: "rainbow 5s infinite",
+                  textDecoration: "none",
+                }}
+              >
+                add problem
+              </a>
+          </div>
+            )}
           {/* Top-Right Container */}
           <div style={{ display: "flex", alignItems: "center" }}>
             {isLoggedIn && (
@@ -121,6 +141,12 @@ const App = () => {
         </div>
         <Routes>
           <Route
+            path="/"
+            element={
+              isLoggedIn ? <Problems /> : <Navigate to="/login" replace />
+            }
+          />
+          <Route
             path="/login"
             element={
               isLoggedIn ? (
@@ -137,6 +163,10 @@ const App = () => {
           <Route
             path="/signup"
             element={!isLoggedIn ? <Signup /> : <Navigate to="/problems" />}
+          />
+          <Route
+            path="/addproblem"
+            element={isLoggedIn ? <AddProblem /> : <Navigate to="/login" replace />}
           />
           <Route
             path="/problems"
@@ -190,6 +220,7 @@ const App = () => {
               )
             }
           />
+          <Route path="/verify/:token" element={<EmailVerification />} />
         </Routes>
       </Router>
     </div>
@@ -197,4 +228,3 @@ const App = () => {
 };
 
 export default App;
-

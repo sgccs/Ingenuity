@@ -3,14 +3,14 @@ import List from '@mui/material/List';
 import axios from 'axios';
 import { baseUrl } from '../constants';
 import Submission from '../components/Submission';
-import { useParams } from 'react-router';
+import { useParams, useNavigate } from 'react-router-dom';
 
 
 
 const Submissionslist = () => {
     const { id } = useParams();
     const [submissions,setSubmissions] = useState([]);
-
+    const navigate = useNavigate();
     useEffect(() => {
         // fetch problems
         const fetchSubmissions = () => {
@@ -19,11 +19,14 @@ const Submissionslist = () => {
                 console.log(res.data);
                 // set submissins
                 setSubmissions(res.data); // submissions = [{],{}]
-            }).catch(err => console.log("Error in fetching details", err));
+            }).catch(err => 
+                {console.log("Error in fetching details", err);
+                navigate('/logout');
+            });
     
         }
         fetchSubmissions();
-    },[id]) 
+    },[id,navigate]) 
 
 
     return (

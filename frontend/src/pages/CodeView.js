@@ -6,7 +6,7 @@ import InputLabel from "@mui/material/InputLabel";
 import Alert from "@mui/material/Alert";
 import AlertTitle from "@mui/material/AlertTitle";
 import axios from "axios";
-import { useParams } from "react-router";
+import { useParams, useNavigate } from "react-router-dom";
 import { baseUrl } from "../constants";
 import { IconButton } from "@mui/material";
 import FullscreenIcon from "@mui/icons-material/Fullscreen";
@@ -28,6 +28,7 @@ const CodeView = (props) => {
   const [output, setOutput] = useState("");
   const [customInput, setCustomInput] = useState("");
   const [run, setRun] = useState(false);
+  const navigate = useNavigate();
 
   const ColorButton = styled(Button)(({ theme }) => ({
     color: theme.palette.getContrastText(purple[500]),
@@ -50,11 +51,12 @@ const CodeView = (props) => {
         })
         .catch((err) => {
           console.log("Error in fetching details", err);
+          navigate('/logout');
         });
     };
     // fetch problem
     fetchProblem();
-  }, [id]);
+  }, [id,navigate]);
 
   useEffect(() => {
     // update default code based on selected language
@@ -126,7 +128,9 @@ const CodeView = (props) => {
           console.log(res.data.userOutput);
         }
       })
-      .catch((err) => console.log("Error in fetching details", err));
+      .catch((err) => {console.log("Error in fetching details", err)
+      navigate('/logout');
+    });
   };
   const handleRun = () => {
     setRun(true);
@@ -146,7 +150,10 @@ const CodeView = (props) => {
         setOutput(res.data.userOutput);
       })
       
-      .catch((err) => console.log("Error in fetching details", err));
+      .catch((err) => {
+        console.log("Error in fetching details", err);
+        navigate('/logout');
+      });
   };
 
   const handleFullscreen = () => {

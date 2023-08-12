@@ -1,8 +1,10 @@
 require('dotenv').config();
 const fs = require('fs');
-const fsExtra = require('fs-extra');
 const path = require('path');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
+const crypto = require('crypto');
+const nodemailer = require('nodemailer');
 const fetch = require('node-fetch');
 const axios = require('axios');
 const { connection } = require("./db");
@@ -12,8 +14,8 @@ let users = require("./models/user.model");
 let submissions = require("./models/submission.model");
 const submission = require('./models/submission.model');
 const secretKey = process.env.JWT_SECRET;
-const bcrypt = require('bcrypt');
 const saltRounds = 10; 
+const frontendUrl = "http://localhost:3000/#";
 
 const listProblems = () => {
   return new Promise((resolve,reject) => {
@@ -240,6 +242,9 @@ const addUser = (data) => {
       }
 
       // Hash the password before saving it
+
+      const verificationToken = crypto.randomBytes(20).toString('hex');
+
       bcrypt.hash(data.password, saltRounds, (hashErr, hashedPassword) => {
         if (hashErr) {
           return reject('Error hashing password.');
@@ -248,7 +253,9 @@ const addUser = (data) => {
         const _id = data.username;
         const password = hashedPassword; // Store the hashed password in the database
         const type = "User";
-        const details = data.details;
+        let details = data.details;
+        details.emailVerified = false;
+        details.verificationToken = verificationToken;
         const date = Date.now();
 
         const user = new users({
@@ -263,9 +270,39 @@ const addUser = (data) => {
         .then((data) =>  {
           console.log(data);
           resolve('User added successfully!');
-        })
-        .catch(err => reject(err));
 
+          const transporter = nodemailer.createTransport({
+            host: "smtp.gmail.com",
+            port: 587,
+            secure: false,
+            auth: {
+              // TODO: replace `user` and `pass` values from <https://forwardemail.net>
+              user: 'suryanarayanasharma1@gmail.com',
+              pass: process.env.MAIL_PASS
+            }
+          });
+
+          const mailOptions = {
+            from: 'suryanarayanasharma1@gmail.com',
+            to: details.email,
+            subject: 'Email Verification',
+            text: `Please click the following link to verify your email: ${frontendUrl}/verify/${verificationToken}`,
+          };
+
+
+          transporter.sendMail(mailOptions, (emailErr) => {
+            if (emailErr) {
+              console.log(emailErr);
+              return reject('Failed to send verification email.');
+            }
+            resolve('User added successfully! Check your email for verification.');
+          });
+
+        })
+        .catch((saveErr) => {
+          console.log(saveErr);
+          reject('Failed to save user.');
+        });
         console.log("services.addUser : added user successfully!");
       });
     })
@@ -285,14 +322,28 @@ const verifyUser = (data) => {
         }
 
         // Compare the provided password with the hashed password in the database
-        console.log(data.password , user.password);
         bcrypt.compare(data.password, user.password, (compareErr, isMatch) => {
           if (compareErr) {
             return reject('Error comparing passwords.');
           }
           if (isMatch) {
+            if(user.details.emailVerified){
             const token = jwt.sign({ username: data.username }, secretKey, { expiresIn: '1h' });
-            resolve({ token, username: data.username });
+            console.log(user.type);
+
+            let userType = false;
+            if(user.type != "User"){
+              userType = true;
+              resolve({ token, username: data.username,userType});
+            }
+            else{
+              resolve({ token, username: data.username,userType });
+              
+            }
+            }
+            else{
+              reject('Email not verified!, Check your mail! ');
+            }
           } else {
             reject('Invalid password.');
           }
@@ -300,9 +351,36 @@ const verifyUser = (data) => {
       })
       .catch((err) => {
         console.log('in catch', err);
-        reject('Error finding user.', err);
+        reject('Invalid user.', err);
       });
   });
 };
 
-module.exports = { listProblems, getProblem, listSubmissions, addProblem, addSubmission, run, addUser, getSubmission, getSubmissions, verifyUser};
+const handleVerification = (token) => {
+  return new Promise((resolve, reject) => {
+    users
+      .findOneAndUpdate(
+        { 'details.verificationToken': token },
+        { 'details.emailVerified': true, 'details.verificationToken': '' },
+        { new: true } // This option returns the updated document after the update
+      )
+      .then((updatedUser) => {
+        if (!updatedUser) {
+          reject('Invalid verification token.');
+        }
+
+        console.log('User found:', updatedUser._id);
+        console.log('After update:', updatedUser.details.emailVerified);
+
+        resolve('Email verified successfully!');
+      })
+      .catch((findErr) => {
+        console.log(findErr);
+        reject('Error finding user for verification.');
+      });
+  });
+};
+
+
+
+module.exports = { listProblems, getProblem, listSubmissions, addProblem, addSubmission, run, addUser, getSubmission, getSubmissions, verifyUser, handleVerification};

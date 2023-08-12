@@ -4,14 +4,14 @@ import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
 import InputLabel from "@mui/material/InputLabel";
 import axios from "axios";
-import { useParams } from "react-router";
+import { useParams, useNavigate } from "react-router-dom";
 import { baseUrl } from "../constants";
 
 const Viewsubmission = () => {
   const { id } = useParams();
   const [selectedTheme, setSelectedTheme] = useState("vs-dark");
   const [submission, setSubmission] = useState(null);
-
+  const navigate = useNavigate();
   
   useEffect(() => {
     const fetchCode = () => {
@@ -22,10 +22,13 @@ const Viewsubmission = () => {
           console.log(res.data);
           setSubmission(res.data);
         })
-        .catch((err) => console.log("Error in fetching details", err));
+        .catch((err) => {
+          console.log("Error in fetching details", err);
+          navigate('/logout');
+        });
     };
     fetchCode();
-  }, [id]);
+  }, [id,navigate]);
 
   const handleThemeChange = (event) => {
     setSelectedTheme(event.target.value);
