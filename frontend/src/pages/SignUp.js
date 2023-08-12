@@ -16,7 +16,6 @@ const Signup = (props) => {
   const [password, setPassword] = useState('');
   const [passwordConfirmation, setPasswordConfirmation] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false); // State for the modal visibility
 
 
