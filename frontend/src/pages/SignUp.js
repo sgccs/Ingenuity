@@ -5,10 +5,9 @@ import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import emailValidator from 'email-validator'; // Import the email validator library
-import { useNavigate } from 'react-router-dom';
 import Modal from '@mui/material/Modal';
 
-const Signup = (props) => {
+const Signup = () => {
 
   const [username, setUserName] = useState('');
   const [email, setEmail] = useState('');
