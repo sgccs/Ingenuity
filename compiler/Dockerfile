@@ -1,19 +1,18 @@
-# Stage 1: Base image with necessary language runtimes
-FROM node:18 AS base
-
-# Install Python and essential packages
+# Stage 1: Base image with Node.js and Python
+FROM node:14 AS base
 RUN apt-get update && apt-get install -y python3
 
-# Stage 2: C++ compiler and Java
+# Stage 2: Install necessary language runtimes and compiler tools
 FROM base AS compilers
 RUN apt-get update && apt-get install -y g++ default-jdk bc
 
-# Create a shared volume to store code and input
+# Stage 3: Create a shared volume to store code and input
 VOLUME /usersubmissions
 WORKDIR /usersubmissions
 
 # Copy the run_code.sh script to the container
 COPY run_code.sh .
+RUN chmod +x run_code.sh  # Give execute permission
 
 # Set environment variables
 ENV LANG=""
@@ -23,5 +22,11 @@ ENV EXPECTED_OUTPUT=""
 ENV TIMELIMIT=""
 ENV FILENAME=""
 
-# Set the default command to run the run_code.sh script
-CMD ["./run_code.sh"]
+# Stage 4: Build the Express server image
+FROM node:14 AS server
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+EXPOSE 3001
+CMD ["node", "index.js"]
