@@ -15,7 +15,7 @@ let submissions = require("./models/submission.model");
 const submission = require('./models/submission.model');
 const secretKey = process.env.JWT_SECRET;
 const saltRounds = 10; 
-const frontendUrl = "http://localhost:3000/#";
+const frontendUrl = "https://ingenuity-iit.netlify.app/#";
 
 const listProblems = () => {
   return new Promise((resolve,reject) => {
@@ -106,7 +106,7 @@ const addSubmission = (data) => {
     const filename = problemID+'_'+userID+'_'+date+'.'+language;
     fs.writeFileSync(path.join(__dirname,'usersubmissions/'+filename), code, 'utf8');
     const body = {filename, input, output,code};
-    axios.post('http://localhost:3001/compile',body,{headers:{'Access-Control-Allow-Origin': '*'}}).then((data) => {
+    axios.post('https://ingenuity-compiler.onrender.com/compile',body,{headers:{'Access-Control-Allow-Origin': '*'}}).then((data) => {
       const userOutput = fs.readFileSync(path.join(__dirname,'usersubmissions/'+basename+'.'+'txt'),'utf8').split('~\n').slice(0,-1);
       let verdict = "";
       for(i = 0;i<output.length;i++){
@@ -177,7 +177,7 @@ const run = (data) => {
     fs.writeFileSync(path.join(__dirname,'usersubmissions/'+filename), code, 'utf8');
     const body = {filename, input,output,code};
     console.log(input);
-    axios.post('http://localhost:3001/compile',body,{headers:{'Access-Control-Allow-Origin': '*'}}).then((data) => {
+    axios.post('https://ingenuity-compiler.onrender.com/compile',body,{headers:{'Access-Control-Allow-Origin': '*'}}).then((data) => {
       const userOutput = fs.readFileSync(path.join(__dirname,'usersubmissions/'+basename+'.'+'txt'),'utf8').split('~\n').slice(0,-1);
       console.log(userOutput);
         const test = {userOutput};
