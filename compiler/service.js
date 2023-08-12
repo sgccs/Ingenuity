@@ -43,7 +43,7 @@ const dockerCreation = (data) => {
     }
 
     docker.run(
-      'compilers', // Replace with the appropriate Docker image name
+      'sgccs/ingenuity-compiler:latest', // Replace with the appropriate Docker image name
       null,
       stdout, // Attach to stdout and stderr
       {
