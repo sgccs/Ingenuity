@@ -3,29 +3,33 @@ import List from '@mui/material/List';
 import axios from 'axios';
 import { baseUrl } from '../constants';
 import Problem from '../components/Problem';
+import { useNavigate } from "react-router-dom";
+
 
 const Problems = () => {
     
     const [problems,setProblems] = useState([]);
+    const navigate = useNavigate();
     useEffect(() => {
         // fetch problems
-        fetchProblems();
-    },[]) 
-
-    const fetchProblems = () => {
-        const token = localStorage.getItem('token');
-        console.log(token);
-        
-        axios.get(baseUrl + '/problems',{headers:{authorization: token, 'Access-Control-Allow-Origin': '*'}}).then(res => {
-            console.log(res.data);
-            // set problems
-            setProblems(res.data); // problems = [{],{}]
-        }).catch(err => {
-            console.log("Error in fetching details", err);
+        const fetchProblems = () => {
+            const token = localStorage.getItem('token');
+            console.log(token);
             
-        });
+            axios.get(baseUrl + '/problems',{headers:{authorization: token, 'Access-Control-Allow-Origin': '*'}}).then(res => {
+                console.log(res.data);
+                // set problems
+                setProblems(res.data); // problems = [{],{}]
+            }).catch(err => {
+                console.log("Error in fetching details", err);
+                navigate('/logout');
+                
+            });
+    
+        }
+        fetchProblems();
+    },[navigate]) 
 
-    }
 
     return (
         <div>

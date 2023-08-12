@@ -6,9 +6,10 @@ import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import emailValidator from 'email-validator'; // Import the email validator library
 import { useNavigate } from 'react-router-dom';
-
+import Modal from '@mui/material/Modal';
 
 const Signup = (props) => {
+
   const [username, setUserName] = useState('');
   const [email, setEmail] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -16,6 +17,8 @@ const Signup = (props) => {
   const [passwordConfirmation, setPasswordConfirmation] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const navigate = useNavigate();
+  const [showModal, setShowModal] = useState(false); // State for the modal visibility
+
 
   const handleSignup = () => {
 
@@ -42,8 +45,9 @@ const Signup = (props) => {
         if(err)  setErrorMessage('Signup failed. Please try again.');
         else{
         console.log(res.data);
-        setErrorMessage('Signup successful! Please login again with the credentials.');
-        navigate(`/login`);
+        setErrorMessage('Email has been sent to your email! please authenticate your accout before logging in!');
+        setShowModal(true);
+        //navigate(`/verify/`);
         }
       })
       .catch((err) => {
@@ -96,9 +100,25 @@ const Signup = (props) => {
         </Button>
         )
       }
-      create a new account <a href='/#/login'>Login</a>
+      already having an account <a href='/#/login' style={{textDecoration: 'none' }}>Login</a> 
       </div>
       {errorMessage && <Typography color="error">{errorMessage}</Typography>}
+      <Modal
+        open={showModal}
+        onClose={() => setShowModal(false)} // Close the modal when the user clicks outside
+        aria-labelledby="modal-title"
+        aria-describedby="modal-description"
+      >
+        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', backgroundColor: 'white', padding: '20px' }}>
+          <Typography variant="h6" id="modal-title">
+            Success!
+          </Typography>
+          <Typography variant="body1" id="modal-description">
+            {errorMessage}
+          </Typography>
+          <Button onClick={() => setShowModal(false)}>OK</Button> {/* Add a button to close the modal */}
+        </div>
+      </Modal>
     </div>
   );
 };

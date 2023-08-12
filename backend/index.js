@@ -76,6 +76,10 @@ app.post("/login", (req,res) => {
     login(req,res);
 });
 
+app.patch('/verify/:token', (req, res) => {
+  verify(req,res);
+});
+
 
 const listProblems = (req, res) => {
   authorizeRequest(req).then((data) => {
@@ -215,11 +219,10 @@ const getSubmissions = (req, res) => {
 const login = (req,res) => {
     const data = req.body;
     return services.verifyUser(data).then((data) => {
-        res.send(data).status(200);
+        res.status(200).send(data);
     })
     .catch((err) => {
-      console.log('error in index');
-        res.send(err).status(401);
+        res.status(401).send(err);
     })
     
 }
@@ -232,11 +235,26 @@ const signup = (req, res) => {
         res.json('User added successfully!');
     })
     .catch((err) => {
-      res.send(err).status(500);
+      res.status(400).send(err);
     });
 }
 
 const authorizeRequest = (req) => {
   const token = req.headers.authorization;
   return validate.isvalid(token);
+};
+
+
+const verify = (req,res) => {
+  const { token } = req.params;
+
+  // Call a function to handle email verification
+  services
+  .handleVerification(token)
+  .then((message) => {
+    res.send(`<h1>Email Verification Successful!</h1><p>${message}</p>`);
+  })
+  .catch((error) => {
+    res.status(401).send(error);
+  });
 };
